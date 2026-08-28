@@ -14,7 +14,6 @@ subtitle, start → end, duration) + expandable sections.
 | `dynamodb` | 🗄️ | `var(--dynamo)` | `DynamoDB` + operation/table pill | Item / key detail (from logs if X-Ray lacks payloads) · consumed capacity in subtitle |
 | `sqs` | 📨 | `var(--sqs)` | `SQS` + operation/queue pill | Message body (from logs when available) |
 | `sns` | 📣 | `var(--sqs)` | `SNS` + topic pill | Message detail |
-| audit record | 📜 | `var(--audit)` | `Audit` + event pill | Audit record JSON (`<pre>`) — may also appear as a section inside the writing service's hop |
 
 ## Section content rules
 
@@ -25,7 +24,7 @@ subtitle, start → end, duration) + expandable sections.
 - **Logs:** template log-line grid — `SS.mmm` timestamp, colored level (INFO blue, WARN amber,
   ERROR red, DEBUG muted), message. Structured JSON log lines: show `msg` first, then the
   remaining fields compactly. Open this section by default when the hop's story is in its logs.
-- **JSON payloads** (envelopes, DynamoDB items, audit records): pretty-printed 2-space `<pre>`.
+- **JSON payloads** (envelopes, DynamoDB items): pretty-printed 2-space `<pre>`.
 
 ## Badge / status mapping
 

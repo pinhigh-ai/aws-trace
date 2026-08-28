@@ -17,7 +17,7 @@ Header, summary Gantt timeline, and chronological hop cards:
 ![Trace overview — Gantt timeline and first hop](docs/example-collapsed.png)
 
 Every hop expands: HTTP requests/responses (headers + body), per-hop CloudWatch logs with
-level coloring, DynamoDB items, message payloads, and audit records:
+level coloring, DynamoDB items, and message payloads:
 
 ![Fully expanded trace with logs and DynamoDB detail](docs/example-expanded.png)
 
@@ -64,6 +64,33 @@ npx skills add pinhigh-ai/aws-trace -a claude-code
 Manual alternative: copy (or clone and symlink) this folder into your harness's skills
 directory — e.g. `~/.claude/skills/aws-trace` (Claude Code) or `~/.warp/skills/aws-trace`
 (Warp). Each skill is just a folder containing `SKILL.md`.
+
+## Customization
+
+[rules/hop-types.md](rules/hop-types.md) is the skill's extension point — it tells the agent
+what each hop kind shows and how to handle components it doesn't recognize. Because an
+installed skill is just these files, you can tailor it to your organization's tracing by
+editing that file (fork the repo, or edit your installed copy directly):
+
+- **Add hop kinds for your own components.** Append a row to the *Known kinds* table with the
+  icon, palette color, title pattern, and sections you want — e.g. an internal message broker,
+  a payments gateway, or a legacy service that appears in your traces. The agent composes new
+  hop cards from that row exactly as it does for the built-in kinds.
+- **Add custom log queries.** Add a subsection under *Section content rules* describing the
+  extra CloudWatch queries the agent should run for your stack — for example, log groups that
+  aren't derivable from X-Ray segments (queue-triggered workers, on-prem forwarders) and the
+  `filter-log-events` patterns or correlation-ID fields (`correlationId`, `traceparent`, a
+  custom `x-request-id`) that tie those events back to a hop.
+- **Reconstruct hops that never reach X-Ray.** If part of your transaction flows through
+  infrastructure X-Ray can't see (self-hosted brokers, third-party webhooks), describe the log
+  markers that identify a send and a receive, and instruct the agent to synthesize a hop from
+  them — following the same card pattern and the *Unknown components* rule.
+- **Tune the defaults.** Naming conventions for your log groups, a different log-search
+  window, or organization-specific redaction keys can all be stated as additional rules.
+
+Keep [templates/trace-template.html](templates/trace-template.html) untouched so customized
+traces still render with the standard look; your rules only change *what* is gathered and
+which cards appear, not the styling.
 
 ## Requirements
 

@@ -7,7 +7,7 @@ description: Render a full AWS transaction trace as an interactive HTML timeline
 
 Given an X-Ray trace ID, produce **one self-contained interactive HTML document** showing every
 hop of the transaction chronologically top-to-bottom — X-Ray segments, CloudWatch logs per hop,
-HTTP request/response detail, DynamoDB operations, messaging hops, and audit records —
+HTTP request/response detail, DynamoDB operations, and messaging hops —
 then write it to `./.traces/` and open it in the default browser.
 
 ## Inputs
@@ -59,7 +59,7 @@ Copy the CSS, markup patterns, and JS from [templates/trace-template.html](templ
 
 - the dark theme via CSS custom properties (`--bg #0f1419`, panel/border/text/muted tones, and
   per-service accent colors: HTTP blue, Lambda orange, DynamoDB indigo, SQS/SNS pink,
-  audit purple, ok green `#3ecf8e`, warn amber `#f0b429`, error red `#f2555a`);
+  ok green `#3ecf8e`, warn amber `#f0b429`, error red `#f2555a`);
 - the Gantt row, hop card, section, key/value table, `<pre>`, and log-line markup;
 - badge semantics: green `OK`/`200`/`ACK`, amber `WARN`/4xx/`THROTTLED`, red `ERROR`/5xx —
   HTTP hops use the status code as the badge text; error hops also get the `err-card` border;

@@ -19,7 +19,6 @@
     --http: #4da3ff;
     --lambda: #ff9d4d;
     --dynamo: #527fff;
-    --audit: #b06ee8;
     --sqs: #e05fa8;
     --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
   }
@@ -116,8 +115,8 @@
     <span>Status: <span class="badge ok">200 OK</span></span>
     <span>Started: <b>2026-08-28 14:31:02.114 UTC</b></span>
     <span>Duration: <b>412 ms</b></span>
-    <span>Hops: <b>6</b></span>
-    <span>Log events: <b>9</b></span>
+    <span>Hops: <b>5</b></span>
+    <span>Log events: <b>6</b></span>
     <span>Generated: 2026-08-28 15:02:44 UTC</span>
   </div>
 </header>
@@ -129,7 +128,6 @@
   <div class="g-row"><div class="g-name">HTTP payments (external)</div><div class="g-track"><div class="g-bar" style="left:12%;width:22%;background:var(--http)"></div></div><div class="g-ms">92 ms</div></div>
   <div class="g-row"><div class="g-name">DynamoDB acme-orders</div><div class="g-track"><div class="g-bar" style="left:38%;width:8%;background:var(--dynamo)"></div></div><div class="g-ms">31 ms</div></div>
   <div class="g-row"><div class="g-name">SQS order-events</div><div class="g-track"><div class="g-bar" style="left:50%;width:4%;background:var(--sqs)"></div></div><div class="g-ms">14 ms</div></div>
-  <div class="g-row"><div class="g-name">λ audit-service</div><div class="g-track"><div class="g-bar" style="left:58%;width:30%;background:var(--audit)"></div></div><div class="g-ms">121 ms</div></div>
 </div>
 
 <div class="controls">
@@ -207,7 +205,7 @@
             <div class="logline"><span class="lg-ts">02.163</span><span class="lg-lvl INFO">INFO</span><span>Authorizing payment tok-77e01b amount=149.00 USD</span></div>
             <div class="logline"><span class="lg-ts">02.257</span><span class="lg-lvl INFO">INFO</span><span>Payment authorized authId=auth-3391f2</span></div>
             <div class="logline"><span class="lg-ts">02.291</span><span class="lg-lvl INFO">INFO</span><span>Persisted order ord-20260828-0042 to acme-orders</span></div>
-            <div class="logline"><span class="lg-ts">02.310</span><span class="lg-lvl INFO">INFO</span><span>Published audit event ORDER_CREATED to order-events</span></div>
+            <div class="logline"><span class="lg-ts">02.310</span><span class="lg-lvl INFO">INFO</span><span>Published ORDER_CREATED event to order-events</span></div>
           </div>
         </div>
       </div>
@@ -287,42 +285,6 @@ Content-Type: application/json
         <div class="section">
           <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Message body</div>
           <div class="sec-body"><pre>{ "event": "ORDER_CREATED", "orderId": "ord-20260828-0042", "actor": "cus-58201" }</pre></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- HOP 6: audit-service with a WARN -->
-  <div class="hop">
-    <div class="hop-dot" title="Lambda">λ</div>
-    <div class="hop-card">
-      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
-        <span class="chev">▶</span>
-        <div>
-          <div class="hop-title">Lambda &nbsp;<span class="pill">acme-audit-service</span> <span class="badge warn">WARN</span></div>
-          <div class="hop-sub">triggered by SQS order-events · async</div>
-        </div>
-        <div class="hop-time">14:31:02.352 → 14:31:02.473<br><span class="dur">121 ms</span></div>
-      </div>
-      <div class="hop-body">
-        <div class="section open">
-          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Logs (3) — /aws/lambda/acme-audit-service</div>
-          <div class="sec-body">
-            <div class="logline"><span class="lg-ts">02.355</span><span class="lg-lvl INFO">INFO</span><span>Processing audit event ORDER_CREATED orderId=ord-20260828-0042</span></div>
-            <div class="logline"><span class="lg-ts">02.401</span><span class="lg-lvl WARN">WARN</span><span>Audit enrichment lookup slow (46 ms) for actor cus-58201</span></div>
-            <div class="logline"><span class="lg-ts">02.470</span><span class="lg-lvl INFO">INFO</span><span>Audit record written to acme-audit-log</span></div>
-          </div>
-        </div>
-        <div class="section">
-          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Audit record (DynamoDB · acme-audit-log)</div>
-          <div class="sec-body"><pre>{
-  "pk": "AUDIT#2026-08-28",
-  "sk": "14:31:02.468#ord-20260828-0042",
-  "event": "ORDER_CREATED",
-  "actor": "cus-58201",
-  "resource": "ord-20260828-0042",
-  "traceId": "1-68b0c2f4-3a7e91d24c0f8a6b5e1d9f02"
-}</pre></div>
         </div>
       </div>
     </div>
