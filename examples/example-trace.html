@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trace 1-68b0c2f4-3a7e91d24c0f8a6b5e1d9f02</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #171d24;
+    --panel-2: #1d242d;
+    --border: #2a333e;
+    --text: #d8dee6;
+    --muted: #7d8a99;
+    --accent: #4da3ff;
+    --ok: #3ecf8e;
+    --warn: #f0b429;
+    --err: #f2555a;
+    --http: #4da3ff;
+    --lambda: #ff9d4d;
+    --dynamo: #527fff;
+    --audit: #b06ee8;
+    --sqs: #e05fa8;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px; max-width: 1100px; margin: 0 auto;
+  }
+  header { margin-bottom: 20px; }
+  header h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  header h1 .tid { font-family: var(--mono); color: var(--accent); font-size: 15px; }
+  .meta-row { display: flex; gap: 24px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-top: 8px; }
+  .meta-row b { color: var(--text); font-weight: 600; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: rgba(62,207,142,.15); color: var(--ok); }
+  .badge.err { background: rgba(242,85,90,.15); color: var(--err); }
+  .badge.warn { background: rgba(240,180,41,.15); color: var(--warn); }
+
+  /* summary timeline (gantt) */
+  .gantt { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 26px; }
+  .gantt h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  .g-row { display: grid; grid-template-columns: 220px 1fr 70px; align-items: center; gap: 10px; padding: 3px 0; font-size: 12.5px; }
+  .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); }
+  .g-track { position: relative; height: 14px; background: var(--panel-2); border-radius: 3px; }
+  .g-bar { position: absolute; height: 100%; border-radius: 3px; min-width: 3px; }
+  .g-ms { text-align: right; color: var(--muted); font-family: var(--mono); }
+
+  /* vertical flow */
+  .flow { position: relative; padding-left: 46px; }
+  .flow::before { content: ""; position: absolute; left: 17px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .hop { position: relative; margin-bottom: 18px; }
+  .hop-dot {
+    position: absolute; left: -46px; top: 6px; width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    background: var(--panel); border: 2px solid var(--border); z-index: 1;
+  }
+  .hop-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .hop-card.err-card { border-color: rgba(242,85,90,.5); }
+  .hop-head {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; user-select: none;
+  }
+  .hop-head:hover { background: var(--panel-2); }
+  .hop-title { font-weight: 600; }
+  .hop-sub { color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
+  .hop-time { margin-left: auto; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hop-time .dur { color: var(--text); font-weight: 600; }
+  .chev { color: var(--muted); font-size: 11px; transition: transform .15s; }
+  .open > .hop-head .chev { transform: rotate(90deg); }
+  .hop-body { display: none; border-top: 1px solid var(--border); padding: 12px 14px; }
+  .open > .hop-body { display: block; }
+
+  .section { margin-bottom: 10px; }
+  .section:last-child { margin-bottom: 0; }
+  .sec-head {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+    padding: 5px 0;
+  }
+  .sec-head:hover { color: var(--text); }
+  .sec-body { display: none; margin: 4px 0 8px; }
+  .section.open .sec-body { display: block; }
+  .section.open .sec-head .chev { transform: rotate(90deg); }
+
+  pre {
+    background: #0b0f13; border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; overflow-x: auto; font-family: var(--mono); font-size: 12px; line-height: 1.55;
+  }
+  .kv { font-family: var(--mono); font-size: 12px; }
+  .kv td { padding: 2px 14px 2px 0; vertical-align: top; }
+  .kv td:first-child { color: var(--muted); white-space: nowrap; }
+
+  .logline { display: grid; grid-template-columns: 92px 52px 1fr; gap: 10px; padding: 3px 0; font-family: var(--mono); font-size: 12px; border-bottom: 1px dotted #222b34; }
+  .logline:last-child { border-bottom: 0; }
+  .lg-ts { color: var(--muted); }
+  .lg-lvl { font-weight: 700; }
+  .lg-lvl.INFO { color: var(--accent); } .lg-lvl.WARN { color: var(--warn); } .lg-lvl.ERROR { color: var(--err); } .lg-lvl.DEBUG { color: var(--muted); }
+
+  .pill { font-family: var(--mono); font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
+  .controls { margin-bottom: 14px; display: flex; gap: 10px; }
+  .controls button {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 12px; font-size: 12.5px; cursor: pointer;
+  }
+  .controls button:hover { background: var(--panel-2); }
+  footer { margin-top: 30px; color: var(--muted); font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AWS Transaction Trace &nbsp;<span class="tid">1-68b0c2f4-3a7e91d24c0f8a6b5e1d9f02</span></h1>
+  <div class="meta-row">
+    <span>Status: <span class="badge ok">200 OK</span></span>
+    <span>Started: <b>2026-08-28 14:31:02.114 UTC</b></span>
+    <span>Duration: <b>412 ms</b></span>
+    <span>Hops: <b>6</b></span>
+    <span>Log events: <b>9</b></span>
+    <span>Generated: 2026-08-28 15:02:44 UTC</span>
+  </div>
+</header>
+
+<div class="gantt">
+  <h2>Timeline</h2>
+  <div class="g-row"><div class="g-name">API Gateway acme-orders-api</div><div class="g-track"><div class="g-bar" style="left:0%;width:100%;background:var(--http)"></div></div><div class="g-ms">412 ms</div></div>
+  <div class="g-row"><div class="g-name">λ order-service</div><div class="g-track"><div class="g-bar" style="left:4%;width:88%;background:var(--lambda)"></div></div><div class="g-ms">363 ms</div></div>
+  <div class="g-row"><div class="g-name">HTTP payments (external)</div><div class="g-track"><div class="g-bar" style="left:12%;width:22%;background:var(--http)"></div></div><div class="g-ms">92 ms</div></div>
+  <div class="g-row"><div class="g-name">DynamoDB acme-orders</div><div class="g-track"><div class="g-bar" style="left:38%;width:8%;background:var(--dynamo)"></div></div><div class="g-ms">31 ms</div></div>
+  <div class="g-row"><div class="g-name">SQS order-events</div><div class="g-track"><div class="g-bar" style="left:50%;width:4%;background:var(--sqs)"></div></div><div class="g-ms">14 ms</div></div>
+  <div class="g-row"><div class="g-name">λ audit-service</div><div class="g-track"><div class="g-bar" style="left:58%;width:30%;background:var(--audit)"></div></div><div class="g-ms">121 ms</div></div>
+</div>
+
+<div class="controls">
+  <button onclick="toggleAll(true)">Expand all</button>
+  <button onclick="toggleAll(false)">Collapse all</button>
+</div>
+
+<div class="flow">
+
+  <!-- HOP 1: API Gateway -->
+  <div class="hop">
+    <div class="hop-dot" title="API Gateway">🌐</div>
+    <div class="hop-card open">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">API Gateway &nbsp;<span class="pill">POST /v1/orders</span> <span class="badge ok">200</span></div>
+          <div class="hop-sub">acme-orders-api · stage: prod</div>
+        </div>
+        <div class="hop-time">14:31:02.114 → 14:31:02.526<br><span class="dur">412 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section open">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> HTTP Request</div>
+          <div class="sec-body">
+            <table class="kv">
+              <tr><td>Method / Path</td><td>POST /v1/orders</td></tr>
+              <tr><td>Source IP</td><td>203.0.113.42</td></tr>
+              <tr><td>User-Agent</td><td>AcmeStorefront/2.4.1</td></tr>
+              <tr><td>x-request-id</td><td>req-9f7a1c33</td></tr>
+              <tr><td>Authorization</td><td>Bearer eyJraWQiOi… <span class="pill">redacted</span></td></tr>
+            </table>
+            <pre>{
+  "customerId": "cus-58201",
+  "items": [
+    { "sku": "WIDGET-PRO-9000", "qty": 2, "unitPrice": 74.50 }
+  ],
+  "paymentToken": "tok-77e01b",
+  "shippingMethod": "EXPRESS"
+}</pre>
+          </div>
+        </div>
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> HTTP Response — 200 (412 ms)</div>
+          <div class="sec-body">
+            <table class="kv">
+              <tr><td>Content-Type</td><td>application/json</td></tr>
+              <tr><td>x-amzn-RequestId</td><td>7c2e11aa-91f4-4d38-b0aa-52b0de11a0f3</td></tr>
+            </table>
+            <pre>{ "orderId": "ord-20260828-0042", "status": "CONFIRMED" }</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOP 2: Lambda order-service -->
+  <div class="hop">
+    <div class="hop-dot" title="Lambda">λ</div>
+    <div class="hop-card open">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">Lambda &nbsp;<span class="pill">acme-order-service</span> <span class="badge ok">OK</span></div>
+          <div class="hop-sub">cold start: no · memory: 512 MB · billed: 364 ms</div>
+        </div>
+        <div class="hop-time">14:31:02.131 → 14:31:02.494<br><span class="dur">363 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section open">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Logs (6) — /aws/lambda/acme-order-service</div>
+          <div class="sec-body">
+            <div class="logline"><span class="lg-ts">02.133</span><span class="lg-lvl INFO">INFO</span><span>Received order request customer=cus-58201 items=1</span></div>
+            <div class="logline"><span class="lg-ts">02.140</span><span class="lg-lvl DEBUG">DEBUG</span><span>Validating cart: sku WIDGET-PRO-9000 qty=2 in stock</span></div>
+            <div class="logline"><span class="lg-ts">02.163</span><span class="lg-lvl INFO">INFO</span><span>Authorizing payment tok-77e01b amount=149.00 USD</span></div>
+            <div class="logline"><span class="lg-ts">02.257</span><span class="lg-lvl INFO">INFO</span><span>Payment authorized authId=auth-3391f2</span></div>
+            <div class="logline"><span class="lg-ts">02.291</span><span class="lg-lvl INFO">INFO</span><span>Persisted order ord-20260828-0042 to acme-orders</span></div>
+            <div class="logline"><span class="lg-ts">02.310</span><span class="lg-lvl INFO">INFO</span><span>Published audit event ORDER_CREATED to order-events</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOP 3: external HTTP -->
+  <div class="hop">
+    <div class="hop-dot" title="External HTTP">⇄</div>
+    <div class="hop-card">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">HTTP (external) &nbsp;<span class="pill">POST api.payments.example.com/v2/authorize</span> <span class="badge ok">200</span></div>
+          <div class="hop-sub">from acme-order-service</div>
+        </div>
+        <div class="hop-time">14:31:02.163 → 14:31:02.255<br><span class="dur">92 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> HTTP Request</div>
+          <div class="sec-body"><pre>POST /v2/authorize HTTP/1.1
+Host: api.payments.example.com
+Content-Type: application/json
+
+{ "token": "tok-77e01b", "amount": 149.00, "currency": "USD", "reference": "ord-20260828-0042" }</pre></div>
+        </div>
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> HTTP Response — 200 (92 ms)</div>
+          <div class="sec-body"><pre>{ "authorized": true, "authId": "auth-3391f2", "network": "VISA" }</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOP 4: DynamoDB -->
+  <div class="hop">
+    <div class="hop-dot" title="DynamoDB">🗄️</div>
+    <div class="hop-card">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">DynamoDB &nbsp;<span class="pill">PutItem · acme-orders</span> <span class="badge ok">OK</span></div>
+          <div class="hop-sub">consumed capacity: 1.0 WCU</div>
+        </div>
+        <div class="hop-time">14:31:02.260 → 14:31:02.291<br><span class="dur">31 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Item written</div>
+          <div class="sec-body"><pre>{
+  "pk": "ORDER#ord-20260828-0042",
+  "sk": "META",
+  "customerId": "cus-58201",
+  "total": 149.00,
+  "status": "CONFIRMED",
+  "createdAt": "2026-08-28T14:31:02.284Z"
+}</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOP 5: SQS -->
+  <div class="hop">
+    <div class="hop-dot" title="SQS">📨</div>
+    <div class="hop-card">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">SQS &nbsp;<span class="pill">SendMessage · order-events</span> <span class="badge ok">OK</span></div>
+          <div class="hop-sub">messageId: 51ab00e2-…-9d3c</div>
+        </div>
+        <div class="hop-time">14:31:02.296 → 14:31:02.310<br><span class="dur">14 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Message body</div>
+          <div class="sec-body"><pre>{ "event": "ORDER_CREATED", "orderId": "ord-20260828-0042", "actor": "cus-58201" }</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOP 6: audit-service with a WARN -->
+  <div class="hop">
+    <div class="hop-dot" title="Lambda">λ</div>
+    <div class="hop-card">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">Lambda &nbsp;<span class="pill">acme-audit-service</span> <span class="badge warn">WARN</span></div>
+          <div class="hop-sub">triggered by SQS order-events · async</div>
+        </div>
+        <div class="hop-time">14:31:02.352 → 14:31:02.473<br><span class="dur">121 ms</span></div>
+      </div>
+      <div class="hop-body">
+        <div class="section open">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Logs (3) — /aws/lambda/acme-audit-service</div>
+          <div class="sec-body">
+            <div class="logline"><span class="lg-ts">02.355</span><span class="lg-lvl INFO">INFO</span><span>Processing audit event ORDER_CREATED orderId=ord-20260828-0042</span></div>
+            <div class="logline"><span class="lg-ts">02.401</span><span class="lg-lvl WARN">WARN</span><span>Audit enrichment lookup slow (46 ms) for actor cus-58201</span></div>
+            <div class="logline"><span class="lg-ts">02.470</span><span class="lg-lvl INFO">INFO</span><span>Audit record written to acme-audit-log</span></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Audit record (DynamoDB · acme-audit-log)</div>
+          <div class="sec-body"><pre>{
+  "pk": "AUDIT#2026-08-28",
+  "sk": "14:31:02.468#ord-20260828-0042",
+  "event": "ORDER_CREATED",
+  "actor": "cus-58201",
+  "resource": "ord-20260828-0042",
+  "traceId": "1-68b0c2f4-3a7e91d24c0f8a6b5e1d9f02"
+}</pre></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Generated by aws-trace · X-Ray trace 1-68b0c2f4-3a7e91d24c0f8a6b5e1d9f02 · region us-east-1</footer>
+
+<script>
+function toggleAll(open) {
+  document.querySelectorAll('.hop-card').forEach(c => c.classList.toggle('open', open));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('open', open));
+}
+</script>
+</body>
+</html>

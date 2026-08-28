@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<!--
+  aws-trace canonical template.
+  Copy the CSS and JS verbatim. Repeat the marked patterns (gantt row, hop card,
+  section variants) for the actual trace content. {{placeholders}} mark the variable text.
+  examples/example-trace.html shows a fully populated document.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trace {{trace_id}}</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --panel: #171d24;
+    --panel-2: #1d242d;
+    --border: #2a333e;
+    --text: #d8dee6;
+    --muted: #7d8a99;
+    --accent: #4da3ff;
+    --ok: #3ecf8e;
+    --warn: #f0b429;
+    --err: #f2555a;
+    --http: #4da3ff;
+    --lambda: #ff9d4d;
+    --dynamo: #527fff;
+    --audit: #b06ee8;
+    --sqs: #e05fa8;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px; max-width: 1100px; margin: 0 auto;
+  }
+  header { margin-bottom: 20px; }
+  header h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  header h1 .tid { font-family: var(--mono); color: var(--accent); font-size: 15px; }
+  .meta-row { display: flex; gap: 24px; flex-wrap: wrap; color: var(--muted); font-size: 13px; margin-top: 8px; }
+  .meta-row b { color: var(--text); font-weight: 600; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: rgba(62,207,142,.15); color: var(--ok); }
+  .badge.err { background: rgba(242,85,90,.15); color: var(--err); }
+  .badge.warn { background: rgba(240,180,41,.15); color: var(--warn); }
+
+  /* summary timeline (gantt) */
+  .gantt { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 26px; }
+  .gantt h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 10px; }
+  .g-row { display: grid; grid-template-columns: 220px 1fr 70px; align-items: center; gap: 10px; padding: 3px 0; font-size: 12.5px; }
+  .g-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--mono); }
+  .g-track { position: relative; height: 14px; background: var(--panel-2); border-radius: 3px; }
+  .g-bar { position: absolute; height: 100%; border-radius: 3px; min-width: 3px; }
+  .g-ms { text-align: right; color: var(--muted); font-family: var(--mono); }
+
+  /* vertical flow */
+  .flow { position: relative; padding-left: 46px; }
+  .flow::before { content: ""; position: absolute; left: 17px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .hop { position: relative; margin-bottom: 18px; }
+  .hop-dot {
+    position: absolute; left: -46px; top: 6px; width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    background: var(--panel); border: 2px solid var(--border); z-index: 1;
+  }
+  .hop-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .hop-card.err-card { border-color: rgba(242,85,90,.5); }
+  .hop-head {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; user-select: none;
+  }
+  .hop-head:hover { background: var(--panel-2); }
+  .hop-title { font-weight: 600; }
+  .hop-sub { color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
+  .hop-time { margin-left: auto; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .hop-time .dur { color: var(--text); font-weight: 600; }
+  .chev { color: var(--muted); font-size: 11px; transition: transform .15s; }
+  .open > .hop-head .chev { transform: rotate(90deg); }
+  .hop-body { display: none; border-top: 1px solid var(--border); padding: 12px 14px; }
+  .open > .hop-body { display: block; }
+
+  .section { margin-bottom: 10px; }
+  .section:last-child { margin-bottom: 0; }
+  .sec-head {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+    padding: 5px 0;
+  }
+  .sec-head:hover { color: var(--text); }
+  .sec-body { display: none; margin: 4px 0 8px; }
+  .section.open .sec-body { display: block; }
+  .section.open .sec-head .chev { transform: rotate(90deg); }
+
+  pre {
+    background: #0b0f13; border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 12px; overflow-x: auto; font-family: var(--mono); font-size: 12px; line-height: 1.55;
+  }
+  .kv { font-family: var(--mono); font-size: 12px; }
+  .kv td { padding: 2px 14px 2px 0; vertical-align: top; }
+  .kv td:first-child { color: var(--muted); white-space: nowrap; }
+
+  .logline { display: grid; grid-template-columns: 92px 52px 1fr; gap: 10px; padding: 3px 0; font-family: var(--mono); font-size: 12px; border-bottom: 1px dotted #222b34; }
+  .logline:last-child { border-bottom: 0; }
+  .lg-ts { color: var(--muted); }
+  .lg-lvl { font-weight: 700; }
+  .lg-lvl.INFO { color: var(--accent); } .lg-lvl.WARN { color: var(--warn); } .lg-lvl.ERROR { color: var(--err); } .lg-lvl.DEBUG { color: var(--muted); }
+
+  .pill { font-family: var(--mono); font-size: 11px; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
+  .controls { margin-bottom: 14px; display: flex; gap: 10px; }
+  .controls button {
+    background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 12px; font-size: 12.5px; cursor: pointer;
+  }
+  .controls button:hover { background: var(--panel-2); }
+  footer { margin-top: 30px; color: var(--muted); font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AWS Transaction Trace &nbsp;<span class="tid">{{trace_id}}</span></h1>
+  <div class="meta-row">
+    <span>Status: <span class="badge {{ok|warn|err}}">{{overall_status}}</span></span>
+    <span>Started: <b>{{yyyy-mm-dd hh:mm:ss.mmm}} UTC</b></span>
+    <span>Duration: <b>{{total_ms}} ms</b></span>
+    <span>Hops: <b>{{hop_count}}</b></span>
+    <span>Log events: <b>{{log_event_count}}</b></span>
+    <span>Generated: {{generated_at}} UTC</span>
+  </div>
+</header>
+
+<div class="gantt">
+  <h2>Timeline</h2>
+  <!-- PATTERN: one g-row per hop, in chronological order.
+       left/width are % of the whole trace window; background is the hop kind's palette var. -->
+  <div class="g-row">
+    <div class="g-name">{{hop_name}}</div>
+    <div class="g-track"><div class="g-bar" style="left:{{pct}}%;width:{{pct}}%;background:var(--{{kind_color}})"></div></div>
+    <div class="g-ms">{{duration_ms}} ms</div>
+  </div>
+</div>
+
+<div class="controls">
+  <button onclick="toggleAll(true)">Expand all</button>
+  <button onclick="toggleAll(false)">Collapse all</button>
+</div>
+
+<div class="flow">
+
+  <!-- PATTERN: one hop per chronological stage. See rules/hop-types.md for icon,
+       badge, subtitle, and section composition per hop kind.
+       Add class "open" to hop-card / section to expand it by default; add "err-card"
+       to hop-card when the hop is an error. -->
+  <div class="hop">
+    <div class="hop-dot" title="{{kind}}">{{icon}}</div>
+    <div class="hop-card">
+      <div class="hop-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="chev">▶</span>
+        <div>
+          <div class="hop-title">{{title}} &nbsp;<span class="pill">{{detail_pill}}</span> <span class="badge {{ok|warn|err}}">{{badge}}</span></div>
+          <div class="hop-sub">{{subtitle}}</div>
+        </div>
+        <div class="hop-time">{{hh:mm:ss.mmm}} → {{hh:mm:ss.mmm}}<br><span class="dur">{{duration_ms}} ms</span></div>
+      </div>
+      <div class="hop-body">
+
+        <!-- SECTION VARIANT: key/value table -->
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> {{section_title}}</div>
+          <div class="sec-body">
+            <table class="kv">
+              <tr><td>{{key}}</td><td>{{value}}</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- SECTION VARIANT: preformatted payload (JSON / raw HTTP) -->
+        <div class="section">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> {{section_title}}</div>
+          <div class="sec-body"><pre>{{pretty_printed_payload}}</pre></div>
+        </div>
+
+        <!-- SECTION VARIANT: log lines (usually class="section open") -->
+        <div class="section open">
+          <div class="sec-head" onclick="this.parentElement.classList.toggle('open')"><span class="chev">▶</span> Logs ({{n}}) — {{log_group}}</div>
+          <div class="sec-body">
+            <div class="logline"><span class="lg-ts">{{ss.mmm}}</span><span class="lg-lvl {{LEVEL}}">{{LEVEL}}</span><span>{{message}}</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Generated by aws-trace · X-Ray trace {{trace_id}} · region {{region}}</footer>
+
+<script>
+function toggleAll(open) {
+  document.querySelectorAll('.hop-card').forEach(c => c.classList.toggle('open', open));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('open', open));
+}
+</script>
+</body>
+</html>
